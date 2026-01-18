@@ -6,7 +6,8 @@
 //
 
 import Foundation
+import Combine
 
 protocol ProductRepository {
-	func searchProductByKeyword(query: String, page: Int) async -> ApiResult<ProductResponseDto>
+	func searchProductByKeyword(query: String, page: Int) -> AnyPublisher<ApiResult<ProductResponseDto>, Never>
 }

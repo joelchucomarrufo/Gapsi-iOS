@@ -16,6 +16,7 @@ class HomeViewModel: ObservableObject {
 	@Published var history: [String] = []
 	@Published var query: String = ""
 	
+	private var cancellables = Set<AnyCancellable>()
 	private let searchUseCase: SearchProductUseCase
 	
 	init(searchUseCase: SearchProductUseCase) {
@@ -28,15 +29,12 @@ class HomeViewModel: ObservableObject {
 	}
 	
 	func searchProducts() {
-		Task {
-			SearchHistoryManager.shared.saveQuery(query)
-			loadHistory()
-			
-			self.products = .loading
-			
-			let result = await searchUseCase.execute(query: query)
-			self.products = result
-		}
+		searchUseCase.execute(query: query)
+			.receive(on: DispatchQueue.main)
+			.sink { [weak self] result in
+				self?.products = result
+			}
+			.store(in: &cancellables)
 	}
 	
 	func loadHistory() {

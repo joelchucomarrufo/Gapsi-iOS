@@ -7,6 +7,7 @@
 
 import Foundation
 import SwiftUI
+import Kingfisher
 
 struct ProductItem: View {
 	let product: Product
@@ -14,14 +15,12 @@ struct ProductItem: View {
 	var body: some View {
 		HStack(alignment: .top, spacing: 12) {
 			if !product.thumbnail.isEmpty, let url = URL(string: product.thumbnail) {
-				AsyncImage(url: url) { image in
-					image.resizable()
-						.aspectRatio(contentMode: .fill)
-				} placeholder: {
-					ProgressView()
-				}
-				.frame(width: 80, height: 80)
-				.clipShape(RoundedRectangle(cornerRadius: 8))
+				KFImage(URL(string: product.thumbnail))
+					.placeholder { ProgressView() }
+					.resizable()
+					.cacheOriginalImage() // ¡Caché automático!
+					.frame(width: 80, height: 80)
+					.cornerRadius(8)
 			} else {
 				Rectangle()
 					.fill(Color.gray)

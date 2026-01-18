@@ -6,6 +6,8 @@
 //
 
 import Foundation
+import Combine
+import Alamofire
 
 class ProductRepositoryImpl: ProductRepository {
 	
@@ -13,7 +15,7 @@ class ProductRepositoryImpl: ProductRepository {
 	private let baseURL = APIConfig.baseURL
 	private let apiKey = APIConfig.apiKey
 	
-	func searchProductByKeyword(query: String, page: Int) async -> ApiResult<ProductResponseDto> {
+	func searchProductByKeyword(query: String, page: Int) -> AnyPublisher<ApiResult<ProductResponseDto>, Never> {
 		
 		var components = URLComponents(string: baseURL + "/wlm/walmart-search-by-keyword")
 		components?.queryItems = [
@@ -23,13 +25,13 @@ class ProductRepositoryImpl: ProductRepository {
 		]
 		
 		guard let url = components?.url else {
-			return .error(message: "URL Inválida", code: 0)
+			return Just(.error(message: "URL Inválida", code: 0)).eraseToAnyPublisher()
 		}
 		
-		var request = URLRequest(url: url)
-		request.httpMethod = "GET"
-		request.addValue(apiKey, forHTTPHeaderField: "x-rapidapi-key")
+		let headers: HTTPHeaders = [
+			"x-rapidapi-key": apiKey,
+		]
 		
-		return await networkManager.callService(request: request)
+		return networkManager.callService(url: url, headers: headers)
 	}
 }

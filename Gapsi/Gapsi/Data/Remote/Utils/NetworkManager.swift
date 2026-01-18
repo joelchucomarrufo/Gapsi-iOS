@@ -5,29 +5,27 @@
 //  Created by Joel Martin Chuco Marrufo on 18/01/26.
 //
 
+import Alamofire
+import Combine
 import Foundation
 
 class NetworkManager {
 	static let shared = NetworkManager()
 	
-	func callService<T: Decodable>(request: URLRequest) async -> ApiResult<T> {
-		do {
-			print("DEBUG NETWORK REQUEST: \(request)")
-			let (data, response) = try await URLSession.shared.data(for: request)
-			
-			guard let httpResponse = response as? HTTPURLResponse else {
-				return .error(message: "Error de servidor", code: 0)
+	func callService<T: Decodable>(url: URL, headers: HTTPHeaders) -> AnyPublisher<ApiResult<T>, Never> {
+		return AF.request(url, headers: headers)
+			.validate()
+			.publishDecodable(type: T.self)
+			.map { response in
+				switch response.result {
+					case .success(let value):
+						return .success(data: value)
+					case .failure(let error):
+						return .error(message: error.localizedDescription, code: response.response?.statusCode ?? 0)
+				}
 			}
-			
-			if (200...299).contains(httpResponse.statusCode) {
-				let decodedData = try JSONDecoder().decode(T.self, from: data)
-				return .success(data: decodedData)
-			} else {
-				return .error(message: "Error del servidor", code: httpResponse.statusCode)
-			}
-		} catch {
-			print("DEBUG NETWORK ERROR: \(error)")
-			return .error(message: error.localizedDescription, code: -1)
-		}
+			.replaceError(with: .error(message: "Unknown Error", code: -1))
+			.prepend(.loading)
+			.eraseToAnyPublisher()
 	}
 }
