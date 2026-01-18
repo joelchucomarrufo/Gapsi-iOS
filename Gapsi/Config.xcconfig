@@ -1,0 +1,11 @@
+//
+//  Config.xcconfig
+//  Gapsi
+//
+//  Created by Joel Martin Chuco Marrufo on 18/01/26.
+//
+
+// Configuration settings file format documentation can be found at:
+// https://developer.apple.com/documentation/xcode/adding-a-build-configuration-file-to-your-project
+API_KEY = fce0e15738msh6a87c0c9db9505cp14b74fjsn54bc768f3bc7
+BASE_URL = axesso-walmart-data-service.p.rapidapi.com
